@@ -32,7 +32,7 @@ jobs:
         pip install -r requirements.txt --quiet
 
 
-      - name: Run Pytest
+    - name: Run Pytest
       env:
         IS_CI: "true"
       # [수정] 현재 작업 공간의 절대 경로 아래에 결과를 담으라고 명시합니다.
