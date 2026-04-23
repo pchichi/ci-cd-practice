@@ -34,11 +34,12 @@ jobs:
     - name: Run Pytest
       env:
         IS_CI: "true"
-      # 테스트가 실패해도 결과물은 업로드해야 하므로 continue-on-error 사용
-      run: pytest test_login.py --alluredir=allure-results-${{ matrix.os }}
-      continue-on-error: true
+      # [변경점 1] 명령어 끝에 || true를 붙여서 깃허브 액션을 안심시킵니다.
+      run: pytest test_login.py --alluredir=allure-results-${{ matrix.os }} || true
 
     - name: Upload Allure Results
+      # [변경점 2] if: always()를 추가해서 앞 단계가 실패해도 무조건 실행하게 합니다.
+      if: always() 
       uses: actions/upload-artifact@v4
       with:
         name: allure-results-${{ matrix.os }}
