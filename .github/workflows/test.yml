@@ -1,47 +1,57 @@
-name: Run Tests
+name: Multi-OS Automation Test
 
 on: [push]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+  # 매트릭스 설정: 리눅스와 윈도우 서버를 각각 하나씩 요청합니다.
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
 
-    # ✅ 1. 필요한 모든 라이브러리 설치 (flask, selenium 추가)
+    # ✅ 1. 필요한 모든 라이브러리 설치 
+    # 👈 직접 나열하는 대신 -r 옵션으로 파일을 읽어옵니다.
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest flask selenium webdriver-manager
+        pip install -r requirements.txt
 
-    # ✅ 2. Flask 서버를 백그라운드에서 실행 (서버가 떠 있어야 테스트 가능)
-    - name: Run Flask in Background
+
+    # ✅ 2. Flask 서버를 실행 (bash 쉘을 사용하여 OS 공용으로 실행)
+    - name: Start Flask Server
       run: |
         python app.py & 
-        sleep 5  # 서버가 뜰 때까지 5초 대기
+        sleep 5  # 서버가 뜰 때까지 5초 
+      shell: bash
 
-    # ✅ 3. 테스트 실행
+    # ✅ 3. 테스트 실행 (파일명이 test_login.py 인 파일을 실행)
     - name: Run tests
       env:
         IS_CI: "true"  # 👈 "지금 CI 서버에서 도는 중이야"라고 표시를 남김
       run: pytest test_login.py
 
+    # ✅ 4. 테스트 결과 확인(스크린샷 업로드)
     # 테스트 실패 여부와 상관없이(always) 실행하며, 
     # screenshots 폴더가 있으면 깃허브 서버로 업로드합니다.
     - name: Upload Screenshot
       uses: actions/upload-artifact@v4
       if: always() # 테스트가 실패해도 이 스텝은 실행함
       with:
-        name: selenium-screenshots
+        name: screenshots-${{ matrix.os }}
         path: screenshots/*.png
 
+    # ✅ 5. 슬랙 알림 전송 (메시지에 OS 정보 추가하여 실시간 보고)
     - name: Slack Notification
       uses: rtCamp/action-slack-notify@v2
       if: always() # 테스트 성공/실패 여부와 상관없이 무조건 알림을 보냅니다.
@@ -49,6 +59,6 @@ jobs:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }} #금고에서 주소 가져옴
         SLACK_CHANNEL: test-report
         SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
-        SLACK_TITLE: "QA Automation Test Report"
-        SLACK_MESSAGE: "테스트 결과가 도착했습니다. 결과: ${{ job.status }}"
-        SLACK_USERNAME: "CI/CD QA_BOT"
+        SLACK_TITLE: "QA Report (${{ matrix.os }})"
+        SLACK_MESSAGE: "${{ matrix.os }} 환경에서 테스트가 완료 되었습니다. 결과: ${{ job.status }}"
+        SLACK_USERNAME: "Matrix_QA_BOT"
