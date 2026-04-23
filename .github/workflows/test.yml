@@ -4,6 +4,7 @@ on: [push]
 
 jobs:
   test:
+    timeout-minutes: 30
   # 매트릭스 설정: 리눅스와 윈도우 서버를 각각 하나씩 요청합니다.
     strategy:
       matrix:
