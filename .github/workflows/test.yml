@@ -4,8 +4,11 @@ on: [push]
 
 jobs:
   test:
+    # 윈도우 설치 지연을 대비한 넉넉한 타임아웃
     timeout-minutes: 30
     strategy:
+      # 핵심: 우분투가 실패해도 윈도우는 멈추지 않고 끝까지 실행됨
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
     
@@ -26,26 +29,27 @@ jobs:
         pip install -r requirements.txt --quiet --no-progress
       shell: bash
 
+    # --- 서버 실행 구간 (OS별 최적화) ---
     - name: Start Flask Server (Windows)
       if: runner.os == 'Windows'
       run: Start-Process python -ArgumentList "app.py"
       shell: pwsh
 
-    - name: Wait for Windows Server
-      if: runner.os == 'Windows'
-      run: Start-Sleep -s 20
-      shell: pwsh
-
     - name: Start Flask Server (Linux)
       if: runner.os == 'Linux'
-      run: |
-        python app.py &
-        sleep 10
+      run: python app.py &
       shell: bash
 
+    # 서버가 안정적으로 부팅될 때까지 대기 (공통)
+    - name: Wait for Server
+      run: sleep 15
+      shell: bash
+
+    # --- 테스트 실행 (파일명/경로를 꼭 확인하세요!) ---
     - name: Run Pytest
       env:
         IS_CI: "true"
+      # 만약 test_login.py가 tests 폴더 안에 있다면 tests/test_login.py로 수정!
       run: pytest test_login.py
 
     - name: Upload Screenshot
