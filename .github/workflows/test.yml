@@ -64,9 +64,9 @@ jobs:
 
   # 2단계: 결과 통합 및 웹 리포트 배포
   report:
-    needs: test # test 작업이 모두 끝나야 실행됩니다.
+    needs: test
     runs-on: ubuntu-latest
-    if: always() # 테스트가 실패해도 리포트는 생성합니다.
+    if: always()
     
     steps:
     - uses: actions/checkout@v4
@@ -89,28 +89,23 @@ jobs:
       uses: simple-elf/allure-report-action@master
       with:
         allure_results: all-results
+        # [수정] 다운받은 히스토리 폴더를 명확히 지정해 꼬임 방지
+        gh_pages: gh-pages 
+        allure_report: allure-report
         allure_history: allure-history
         keep_reports: 20
 
+    # 🚀 [핵심 추가] 배포 액션이 뇌 정지 오지 않도록 찌꺼기 .git 폴더 강제 삭제
+    - name: Remove redundant .git folder
+      run: sudo rm -rf allure-history/.git
+
     - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v4 # 최신 v4 버전 권장
+      uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: allure-history
         publish_branch: gh-pages
-        
-        # 1. 브랜치가 없어도 강제로 고아(Orphan) 브랜치를 생성해 밀어넣음
         force_orphan: true
-        
-        # 2. 내용물이 없더라도 커밋을 생성해서 브랜치 존재를 깃허브에 알림
-        allow_empty_commit: true
-        
-        # 3. 명시적인 커밋 메시지 (첫 배포임을 알림)
-        full_commit_message: "Initial deployment to gh-pages"
-        
-        # 4. 깃 설정 (권한 에러 방지)
-        user_name: 'github-actions[bot]'
-        user_email: 'github-actions[bot]@users.noreply.github.com'
 
     - name: Slack Notification
       uses: slackapi/slack-github-action@v1.24.0
