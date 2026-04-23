@@ -29,17 +29,18 @@ jobs:
 
 
     # ✅ 2. Flask 서버를 실행 
-    # 윈도우 전용 서버 실행
+    # --- 윈도우용 서버 설정 (스텝을 두 개로 쪼갰습니다) ---
     - name: Start Flask Server (Windows)
       if: runner.os == 'Windows'
-      run: |
-        # Start-Process를 사용해 서버를 완전히 독립된 창(숨김)으로 띄워버립니다.
-        Start-Process python -ArgumentList "app.py" -WindowStyle Hidden
-        # 서버가 뜨는 동안 15초 대기
-        Start-Sleep -s 15
-      shell: pwsh # 윈도우 전용 파워쉘 사용
+      run: Start-Process python -ArgumentList "app.py"
+      shell: pwsh
 
-    # 리눅스 전용 서버 실행
+    - name: Wait for Windows Server
+      if: runner.os == 'Windows'
+      run: Start-Sleep -s 15
+      shell: pwsh
+
+    # --- 리눅스용 서버 설정 (기존 방식 유지) ---
     - name: Start Flask Server (Linux)
       if: runner.os == 'Linux'
       run: |
