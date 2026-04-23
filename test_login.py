@@ -1,47 +1,54 @@
+import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options # 👈 추가
+from selenium.webdriver.chrome.options import Options
 import time
-import os # 👈 환경 변수 확인을 위해 추가
+import os
 
-def test_login():
-    # 1. 크롬 옵션 객체 생성
+# 1. 공통 드라이버 설정 (고정)
+def setup_driver():
     options = Options()
-
-    # 2. CI 환경(GitHub Actions)인지 체크해서 Headless 설정 주입
-    # (아까 test.yml에 IS_CI: "true"를 넣기로 했으니 그걸 읽어옵니다)
     if os.environ.get('IS_CI') == 'true':
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
-
-    # 3. 옵션을 적용해서 브라우저 실행
     driver = webdriver.Chrome(options=options)
+    return driver
 
-    # --- 여기서부터는 윤지님의 기존 로직과 동일합니다 ---
+# 2. [핵심] 테스트 데이터 관리
+# 형식: (아이디, 패스워드, 기대하는 결과 키워드, 테스트 케이스 이름)
+test_scenarios = [
+    ("admin", "1234", "DASHBOARD", "정상_로그인"),
+    ("wrong_user", "1234", "fail", "아이디_오류"),
+    ("admin", "wrong_pw", "fail", "비밀번호_오류"),
+    ("", "", "fail", "빈값_로그인"),
+    ("admin'--", "1234", "fail", "SQL_인젝션_시도")
+]
+
+# 3. 파라미터화된 테스트 함수
+@pytest.mark.parametrize("user_id, user_pw, expected_text, case_name", test_scenarios)
+def test_login_logic(user_id, user_pw, expected_text, case_name):
+    driver = setup_driver()
+    print(f"\n실행 중인 케이스: {case_name}")
+    
     try:
         driver.get("http://127.0.0.1:5000")
-        time.sleep(1)
-
-        driver.find_element(By.NAME, "id").send_keys("admin")
-        driver.find_element(By.NAME, "pw").send_keys("1234")
+        
+        # 데이터 세트의 값을 입력
+        driver.find_element(By.NAME, "id").send_keys(user_id)
+        driver.find_element(By.NAME, "pw").send_keys(user_pw)
         driver.find_element(By.TAG_NAME, "button").click()
-
+        
         time.sleep(2)
 
-        # 검증 (일부러 틀리게 바꿔서 스크린샷이 찍히는지 테스트해보세요!)
-        # assert "WRONG_TEXT" in driver.page_source 
-        assert "DASHBOARD_failed" in driver.page_source
+        # 검증 (대소문자 구분 없이 확인)
+        assert expected_text.lower() in driver.page_source.lower()
 
     except Exception as e:
-        # 에러가 나면 screenshots 폴더를 만들고 스크린샷 저장
+        # 실패 시 케이스명을 파일명으로 해서 스크린샷 저장
         if not os.path.exists("screenshots"):
             os.makedirs("screenshots")
-        driver.save_screenshot("screenshots/failure_log.png")
-        
-        # 스크린샷을 찍은 후, 원래 발생했던 에러를 다시 던져서 테스트가 실패하게 만듭니다.
+        driver.save_screenshot(f"screenshots/fail_{case_name}.png")
         raise e
-        
     finally:
-        # 성공하든 실패하든 브라우저는 꼭 닫아줍니다.
         driver.quit()

@@ -68,12 +68,19 @@ jobs:
             "text": "QA Report (${{ matrix.os }}): ${{ job.status }}\n${{ matrix.os }} 환경 테스트 완료!",
             "attachments": [
               {
+                "fallback": "QA Test Report",
                 "color": "${{ job.status == 'success' && '#36a64f' || '#ff0000' }}",
-                "title": "GitHub Actions 결과 확인",
-                "title_link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                "pretext": "🚀 *QA Automation Test Result*",
+                "title": "QA Report (${{ matrix.os }})",
+                "title_link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                "text": "결과: ${{ job.status == 'success' && '✅ SUCCESS' || '❌ FAILURE' }}\n환경: ${{ matrix.os }}",
+                "footer": "GitHub Actions QA Bot",
+                "footer_icon": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
               }
             ]
           }
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+
