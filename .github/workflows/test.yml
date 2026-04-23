@@ -4,7 +4,6 @@ on: [push]
 
 jobs:
   test:
-    # 1. 윈도우의 '느림'을 참아줄 시간 설정 (최대 30분)
     timeout-minutes: 30
     strategy:
       matrix:
@@ -21,14 +20,12 @@ jobs:
       with:
         python-version: '3.10'
 
-    # 2. 설치 단계: 윈도우에서 멈추지 않게 진행바를 끄고(--no-progress) 아주 조용히 설치합니다.
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt --quiet --no-progress
-      shell: bash # 윈도우에서도 안정적인 bash 쉘 사용
+      shell: bash
 
-    # 3. 윈도우 서버 실행: 스텝 분리 및 원라이너 적용
     - name: Start Flask Server (Windows)
       if: runner.os == 'Windows'
       run: Start-Process python -ArgumentList "app.py"
@@ -36,10 +33,9 @@ jobs:
 
     - name: Wait for Windows Server
       if: runner.os == 'Windows'
-      run: Start-Sleep -s 20 # 윈도우를 위해 5초 더 늘렸습니다.
+      run: Start-Sleep -s 20
       shell: pwsh
 
-    # 4. 리눅스 서버 실행
     - name: Start Flask Server (Linux)
       if: runner.os == 'Linux'
       run: |
@@ -52,7 +48,6 @@ jobs:
         IS_CI: "true"
       run: pytest test_login.py
 
-    # 5. 결과물 업로드 및 슬랙 알림 (기존과 동일)
     - name: Upload Screenshot
       uses: actions/upload-artifact@v4
       if: always()
@@ -69,7 +64,7 @@ jobs:
             "text": "QA Report (${{ matrix.os }}): ${{ job.status }}\n${{ matrix.os }} 환경 테스트 완료!",
             "attachments": [
               {
-                "color": "${{ job.status == 'success' ? '#36a64f' : '#ff0000' }}",
+                "color": "${{ job.status == 'success' && '#36a64f' || '#ff0000' }}",
                 "title": "GitHub Actions 결과 확인",
                 "title_link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
               }
