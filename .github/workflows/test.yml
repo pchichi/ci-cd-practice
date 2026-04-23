@@ -81,6 +81,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_branch: gh-pages
         publish_dir: allure-history
+        force_orphan: true
 
     - name: Slack Notification
       uses: slackapi/slack-github-action@v1.24.0
