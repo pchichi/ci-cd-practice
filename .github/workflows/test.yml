@@ -31,8 +31,14 @@ jobs:
     # ✅ 2. Flask 서버를 실행 (bash 쉘을 사용하여 OS 공용으로 실행)
     - name: Start Flask Server
       run: |
-        python app.py & 
-        sleep 5  # 서버가 뜰 때까지 5초 
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          # 윈도우: Start-Process를 사용하여 별도 프로세스로 서버를 띄웁니다.
+          powershell "Start-Process python -ArgumentList 'app.py' -WindowStyle Hidden"
+        else
+          # 리눅스: 기존처럼 &를 사용하여 백그라운드 실행
+          python app.py &
+        fi
+        sleep 10 # 서버가 완전히 뜰 때까지 조금 더 넉넉하게 대기
       shell: bash
 
     # ✅ 3. 테스트 실행 (파일명이 test_login.py 인 파일을 실행)
