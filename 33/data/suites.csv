@@ -1,0 +1,6 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","7876","케이스: SQL_인젝션_시도","","Thu Apr 23 05:48:06 UTC 2026","broken","Thu Apr 23 05:48:14 UTC 2026","","test_login","",""
+"","7970","케이스: 빈값_로그인","","Thu Apr 23 05:47:58 UTC 2026","broken","Thu Apr 23 05:48:06 UTC 2026","","test_login","",""
+"","26577","케이스: 정상_로그인","","Thu Apr 23 05:47:17 UTC 2026","broken","Thu Apr 23 05:47:44 UTC 2026","","test_login","",""
+"","7926","케이스: 아이디_오류","","Thu Apr 23 05:47:44 UTC 2026","broken","Thu Apr 23 05:47:52 UTC 2026","","test_login","",""
+"","6585","케이스: 비밀번호_오류","","Thu Apr 23 05:47:52 UTC 2026","broken","Thu Apr 23 05:47:58 UTC 2026","","test_login","",""
