@@ -33,9 +33,11 @@ jobs:
         IS_CI: "true"  # 👈 "지금 CI 서버에서 도는 중이야"라고 표시를 남김
       run: pytest test_login.py
 
-    - name: Run Sample2 Test (Expected to fail)
-      run: pytest test_sample2.py
-      continue-on-error: true # 👈 [꿀팁] 앞의 테스트가 실패해도 다음 테스트를 계속 돌리게 함
-
-    - name: Run Sample Test
-      run: pytest test_sample.py
+    # 테스트 실패 여부와 상관없이(always) 실행하며, 
+    # screenshots 폴더가 있으면 깃허브 서버로 업로드합니다.
+    - name: Upload Screenshot
+      uses: actions/upload-artifact@v4
+      if: always() # 테스트가 실패해도 이 스텝은 실행함
+      with:
+        name: selenium-screenshots
+        path: screenshots/*.png
