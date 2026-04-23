@@ -51,14 +51,35 @@ jobs:
         name: screenshots-${{ matrix.os }}
         path: screenshots/*.png
 
-    # ✅ 5. 슬랙 알림 전송 (메시지에 OS 정보 추가하여 실시간 보고)
+
+    # # ✅ 5. 슬랙 알림 전송 (메시지에 OS 정보 추가하여 실시간 보고)
     - name: Slack Notification
-      uses: rtCamp/action-slack-notify@v2
-      if: always() # 테스트 성공/실패 여부와 상관없이 무조건 알림을 보냅니다.
+      # 도커를 쓰지 않는 범용 액션으로 교체
+      uses: slackapi/slack-github-action@v1.24.0
+      if: always()
+      with:
+        # 이 액션은 payload라는 형식을 사용합니다
+        payload: |
+          {
+            "text": "QA Report (${{ matrix.os }}): ${{ job.status }}\n${{ matrix.os }} 환경 테스트 완료!",
+            "attachments": [
+              {
+                "color": "${{ job.status == 'success' && '#36a64f' || '#ff0000' }}",
+                "title": "GitHub Actions 결과 확인",
+                "title_link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              }
+            ]
+          }
       env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }} #금고에서 주소 가져옴
-        SLACK_CHANNEL: test-report
-        SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
-        SLACK_TITLE: "QA Report (${{ matrix.os }})"
-        SLACK_MESSAGE: "${{ matrix.os }} 환경에서 테스트가 완료 되었습니다. 결과: ${{ job.status }}"
-        SLACK_USERNAME: "Matrix_QA_BOT"
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+    # - name: Slack Notification
+    #   uses: rtCamp/action-slack-notify@v2
+    #   if: always() # 테스트 성공/실패 여부와 상관없이 무조건 알림을 보냅니다.
+    #   env:
+    #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }} #금고에서 주소 가져옴
+    #     SLACK_CHANNEL: test-report
+    #     SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
+    #     SLACK_TITLE: "QA Report (${{ matrix.os }})"
+    #     SLACK_MESSAGE: "${{ matrix.os }} 환경에서 테스트가 완료 되었습니다. 결과: ${{ job.status }}"
+    #     SLACK_USERNAME: "Matrix_QA_BOT"
