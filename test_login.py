@@ -5,6 +5,16 @@ from selenium.webdriver.chrome.options import Options
 import time
 import os
 
+import allure
+
+@allure.feature("로그인 기능")
+@allure.story("비유효 계정 로그인 시도")
+@pytest.mark.parametrize("user_id, user_pw, expected_text, case_name", test_scenarios)
+def test_login_logic(user_id, user_pw, expected_text, case_name):
+    allure.dynamic.title(f"테스트 케이스: {case_name}")
+    # ... 기존 로직 ...
+
+
 # 1. 공통 드라이버 설정 (고정)
 def setup_driver():
     options = Options()
