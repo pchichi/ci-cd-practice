@@ -31,7 +31,7 @@ def test_login():
 
         # 검증 (일부러 틀리게 바꿔서 스크린샷이 찍히는지 테스트해보세요!)
         # assert "WRONG_TEXT" in driver.page_source 
-        assert "DASHBOARD" in driver.page_source
+        assert "DASHBOARD_failed" in driver.page_source
 
     except Exception as e:
         # 에러가 나면 screenshots 폴더를 만들고 스크린샷 저장
