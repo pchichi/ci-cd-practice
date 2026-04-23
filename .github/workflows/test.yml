@@ -26,7 +26,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt --quiet --no-progress
+        pip install -r requirements.txt --quiet
       shell: bash
 
     # --- 서버 실행 구간 (OS별 최적화) ---
