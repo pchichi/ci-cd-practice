@@ -41,3 +41,14 @@ jobs:
       with:
         name: selenium-screenshots
         path: screenshots/*.png
+
+    - name: Slack Notification
+      uses: rtCamp/action-slack-notify@v2
+      if: always() # 테스트 성공/실패 여부와 상관없이 무조건 알림을 보냅니다.
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }} #금고에서 주소 가져옴
+        SLACK_CHANNEL: test-report
+        SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
+        SLACK_TITLE: "QA Automation Test Report"
+        SLACK_MESSAGE: "테스트 결과가 도착했습니다. 결과: ${{ job.status }}"
+        SLACK_USERNAME: "CI/CD QA_BOT"
